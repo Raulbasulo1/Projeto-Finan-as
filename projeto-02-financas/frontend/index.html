@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finanças Pessoais</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="container header-content">
+      <div>
+        <p class="eyebrow">Projeto 2 - Laboratórios de Sistemas e Serviços</p>
+        <h1>Plataforma de Analítica de Finanças Pessoais</h1>
+        <p>
+          Aplicação web para acompanhar receitas, despesas, categorias, contas,
+          orçamentos mensais e saúde financeira.
+        </p>
+      </div>
+
+      <div class="status-card">
+        <span class="status-label">Estado da API</span>
+        <strong id="api-status">A verificar...</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="toolbar">
+      <div>
+        <h2>Dashboard financeiro</h2>
+        <p>Resumo dos principais indicadores para o período selecionado.</p>
+      </div>
+
+      <div class="filters">
+        <label>
+          Ano
+          <input type="number" id="filter-year" value="2026">
+        </label>
+
+        <label>
+          Mês
+          <select id="filter-month">
+            <option value="">Todos</option>
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5" selected>Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </label>
+
+        <button id="apply-filters">Atualizar</button>
+	<a
+  	  id="export-csv"
+          class="secondary-button export-link"
+          href="http://localhost:8001/export/transactions.csv?year=2026&month=5"
+        >
+         Exportar CSV
+      </a>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Receitas</span>
+        <strong id="total-income">0,00 €</strong>
+        <p>Total de entradas no período.</p>
+      </article>
+
+      <article class="summary-card">
+        <span>Despesas</span>
+        <strong id="total-expense">0,00 €</strong>
+        <p>Total de gastos registados.</p>
+      </article>
+
+      <article class="summary-card">
+        <span>Saldo</span>
+        <strong id="balance">0,00 €</strong>
+        <p>Diferença entre receitas e despesas.</p>
+      </article>
+
+      <article class="summary-card">
+        <span>Orçamento usado</span>
+        <strong id="budget-usage">0%</strong>
+        <p>Percentagem do orçamento mensal já utilizada.</p>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h3>Despesas por categoria</h3>
+          <p>Distribuição dos gastos registados.</p>
+        </div>
+        <canvas id="category-chart"></canvas>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h3>Receitas vs despesas</h3>
+          <p>Evolução mensal ao longo do ano.</p>
+        </div>
+        <canvas id="monthly-chart"></canvas>
+      </article>
+    </section>
+
+    <section class="health-section">
+      <article class="panel health-panel">
+        <div>
+          <p class="eyebrow">Saúde financeira</p>
+          <h3 id="health-status">A calcular...</h3>
+          <p id="health-message">
+            A análise será apresentada com base nas receitas e despesas registadas.
+          </p>
+        </div>
+
+        <div class="health-score">
+          <strong id="health-score">0</strong>
+          <span>pontos</span>
+        </div>
+      </article>
+    </section>
+
+<section class="content-grid">
+  <article class="panel">
+    <div class="panel-header">
+      <h3>Gestão de contas</h3>
+      <p>Cria e acompanha as contas usadas para associar receitas e despesas.</p>
+    </div>
+
+    <form id="account-form" class="form-grid">
+      <label>
+        Nome da conta
+        <input type="text" id="account-name" placeholder="Ex: Conta à ordem" required>
+      </label>
+
+      <label>
+        Tipo de conta
+        <select id="account-type" required>
+          <option value="bank">Conta bancária</option>
+          <option value="savings">Poupança</option>
+          <option value="cash">Dinheiro</option>
+          <option value="card">Cartão</option>
+        </select>
+      </label>
+
+      <label>
+        Saldo inicial
+        <input type="number" id="account-balance" step="0.01" value="0" required>
+      </label>
+
+      <button type="submit">Adicionar conta</button>
+    </form>
+
+    <p id="account-message" class="form-message"></p>
+
+    <div id="accounts-list" class="management-list">
+      <p>A carregar contas...</p>
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-header">
+      <h3>Gestão de categorias</h3>
+      <p>Define categorias para classificar receitas e despesas.</p>
+    </div>
+
+    <form id="category-form" class="form-grid">
+      <label>
+        Nome da categoria
+        <input type="text" id="category-name" placeholder="Ex: Alimentação" required>
+      </label>
+
+      <label>
+        Tipo de categoria
+        <select id="category-type" required>
+          <option value="expense">Despesa</option>
+          <option value="income">Receita</option>
+        </select>
+      </label>
+
+      <button type="submit">Adicionar categoria</button>
+    </form>
+
+    <p id="category-message" class="form-message"></p>
+
+    <div id="categories-list" class="management-list">
+      <p>A carregar categorias...</p>
+    </div>
+  </article>
+</section>
+
+<section class="content-grid">
+  <article class="panel">
+    <div class="panel-header">
+      <h3>Novo orçamento mensal</h3>
+      <p>Define um limite de gastos para uma categoria num determinado mês.</p>
+    </div>
+
+    <form id="budget-form" class="form-grid">
+      <label>
+        Categoria
+        <select id="budget-category" required></select>
+      </label>
+
+      <label>
+        Ano
+        <input type="number" id="budget-year" value="2026" required>
+      </label>
+
+      <label>
+        Mês
+        <select id="budget-month" required>
+          <option value="1">Janeiro</option>
+          <option value="2">Fevereiro</option>
+          <option value="3">Março</option>
+          <option value="4">Abril</option>
+          <option value="5" selected>Maio</option>
+          <option value="6">Junho</option>
+          <option value="7">Julho</option>
+          <option value="8">Agosto</option>
+          <option value="9">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+      </label>
+
+      <label>
+        Limite mensal
+        <input type="number" id="budget-limit" step="0.01" min="0" required>
+      </label>
+
+      <button type="submit">Adicionar orçamento</button>
+    </form>
+
+    <p id="budget-message" class="form-message"></p>
+  </article>
+
+  <article class="panel">
+    <div class="panel-header">
+      <h3>Análise dos orçamentos</h3>
+      <p>Comparação entre o limite definido e os gastos reais por categoria.</p>
+    </div>
+
+    <div id="budget-analysis-list" class="budget-list">
+      <p>A carregar análise dos orçamentos...</p>
+    </div>
+  </article>
+</section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h3>Nova transação</h3>
+          <p>Regista uma receita ou despesa.</p>
+        </div>
+
+        <form id="transaction-form" class="form-grid">
+          <label>
+            Descrição
+            <input type="text" id="transaction-description" required>
+          </label>
+
+          <label>
+            Valor
+            <input type="number" id="transaction-amount" step="0.01" min="0" required>
+          </label>
+
+          <label>
+            Tipo
+            <select id="transaction-type" required>
+              <option value="expense">Despesa</option>
+              <option value="income">Receita</option>
+            </select>
+          </label>
+
+          <label>
+            Data
+            <input type="date" id="transaction-date" required>
+          </label>
+
+          <label>
+            Conta
+            <select id="transaction-account" required></select>
+          </label>
+
+          <label>
+            Categoria
+            <select id="transaction-category" required></select>
+          </label>
+
+          <button type="submit">Adicionar transação</button>
+        </form>
+
+        <p id="form-message" class="form-message"></p>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h3>Últimas transações</h3>
+          <p>Registos existentes na base de dados.</p>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Conta</th>
+                <th>Valor</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="transactions-table">
+              <tr>
+                <td colspan="7">A carregar transações...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>Finanças Pessoais</h3>
+        <p>Projeto académico com FastAPI, PostgreSQL, Docker Compose e Chart.js.</p>
+      </div>
+
+      <div>
+        <h3>Componentes</h3>
+        <ul>
+          <li>Frontend estático</li>
+          <li>API REST</li>
+          <li>Base de dados relacional</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Funcionalidades</h3>
+        <ul>
+          <li>Transações</li>
+          <li>Categorias</li>
+          <li>Orçamentos</li>
+          <li>Gráficos</li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
